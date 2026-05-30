@@ -1,0 +1,178 @@
+
+<style>
+  .screen { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 1.5rem; max-width: 360px; margin: 1.5rem auto; }
+  .atm-header { text-align: center; margin-bottom: 1.5rem; }
+  .atm-header i { font-size: 32px; color: var(--color-text-secondary); }
+  .atm-title { font-size: 16px; font-weight: 500; margin: 8px 0 4px; }
+  .atm-sub { font-size: 13px; color: var(--color-text-secondary); }
+  .input-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
+  .input-row label { font-size: 13px; color: var(--color-text-secondary); }
+  .input-row input { width: 100%; box-sizing: border-box; }
+  .btn-primary { width: 100%; padding: 10px; background: var(--color-text-primary); color: var(--color-background-primary); border: none; border-radius: var(--border-radius-md); font-size: 14px; font-weight: 500; cursor: pointer; }
+  .btn-primary:hover { opacity: 0.85; }
+  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1rem; }
+  .menu-btn { padding: 14px 8px; background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--color-text-primary); }
+  .menu-btn:hover { background: var(--color-background-secondary); }
+  .menu-btn i { font-size: 22px; color: var(--color-text-secondary); }
+  .msg { padding: 10px 14px; border-radius: var(--border-radius-md); font-size: 13px; margin-top: 1rem; }
+  .msg.success { background: var(--color-background-success); color: var(--color-text-success); }
+  .msg.danger { background: var(--color-background-danger); color: var(--color-text-danger); }
+  .msg.info { background: var(--color-background-info); color: var(--color-text-info); }
+  .balance-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 1rem 1.25rem; margin-top: 1rem; }
+  .bal-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+  .bal-amount { font-size: 26px; font-weight: 500; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .back-btn { font-size: 13px; color: var(--color-text-secondary); background: none; border: none; cursor: pointer; padding: 0; margin-top: 1rem; display: flex; align-items: center; gap: 4px; }
+  .back-btn:hover { color: var(--color-text-primary); }
+  .tx-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .tx-row:last-child { border-bottom: none; }
+  .tx-label { color: var(--color-text-secondary); }
+</style>
+
+<div class="screen">
+  <div class="atm-header">
+    <i class="ti ti-building-bank" aria-hidden="true"></i>
+    <div class="atm-title">ATM Simulator</div>
+    <div class="atm-sub">Please insert your card to begin</div>
+  </div>
+
+  <div id="login-section" class="section active">
+    <div class="input-row">
+      <label>Card number</label>
+      <input type="number" id="cn-input" placeholder="e.g. 1204" />
+    </div>
+    <div class="input-row">
+      <label>PIN</label>
+      <input type="password" id="pin-input" placeholder="4-digit PIN" />
+    </div>
+    <button class="btn-primary" onclick="login()">Continue <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+    <div id="login-msg"></div>
+  </div>
+
+  <div id="menu-section" class="section">
+    <div class="balance-card">
+      <div class="bal-label">Available balance</div>
+      <div class="bal-amount" id="bal-display">₹0</div>
+    </div>
+    <div class="menu-grid">
+      <button class="menu-btn" onclick="showSection('check')"><i class="ti ti-eye" aria-hidden="true"></i> Check balance</button>
+      <button class="menu-btn" onclick="showSection('deposit')"><i class="ti ti-circle-plus" aria-hidden="true"></i> Deposit</button>
+      <button class="menu-btn" onclick="showSection('withdraw')"><i class="ti ti-circle-minus" aria-hidden="true"></i> Withdraw</button>
+      <button class="menu-btn" onclick="logout()"><i class="ti ti-logout" aria-hidden="true"></i> Exit</button>
+    </div>
+  </div>
+
+  <div id="check-section" class="section">
+    <div class="balance-card">
+      <div class="bal-label">Current balance</div>
+      <div class="bal-amount" id="check-bal">₹0</div>
+    </div>
+    <div id="tx-history" style="margin-top: 1rem;"></div>
+    <button class="back-btn" onclick="showSection('menu')"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back to menu</button>
+  </div>
+
+  <div id="deposit-section" class="section">
+    <div class="input-row" style="margin-top: 0.5rem;">
+      <label>Amount to deposit (₹)</label>
+      <input type="number" id="dep-amount" placeholder="Enter amount" min="1" />
+    </div>
+    <button class="btn-primary" onclick="deposit()">Deposit</button>
+    <div id="dep-msg"></div>
+    <button class="back-btn" onclick="showSection('menu')"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back to menu</button>
+  </div>
+
+  <div id="withdraw-section" class="section">
+    <div class="input-row" style="margin-top: 0.5rem;">
+      <label>Amount to withdraw (₹)</label>
+      <input type="number" id="wit-amount" placeholder="Enter amount" min="1" />
+    </div>
+    <button class="btn-primary" onclick="withdraw()">Withdraw</button>
+    <div id="wit-msg"></div>
+    <button class="back-btn" onclick="showSection('menu')"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back to menu</button>
+  </div>
+</div>
+
+<script>
+const data = {
+  1204: { pin: 4444, balance: 12000, history: [] },
+  1205: { pin: 5555, balance: 8000, history: [] },
+  1206: { pin: 6666, balance: 15000, history: [] }
+};
+
+let currentCard = null;
+
+function fmt(n) { return '₹' + n.toLocaleString('en-IN'); }
+
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(name + '-section').classList.add('active');
+  if (name === 'menu' || name === 'check') refreshBalance();
+  if (name === 'check') renderHistory();
+  clearMsgs();
+}
+
+function clearMsgs() {
+  ['login-msg','dep-msg','wit-msg'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  });
+}
+
+function refreshBalance() {
+  const bal = data[currentCard].balance;
+  document.getElementById('bal-display').textContent = fmt(bal);
+  document.getElementById('check-bal').textContent = fmt(bal);
+}
+
+function renderHistory() {
+  const h = data[currentCard].history;
+  const el = document.getElementById('tx-history');
+  if (!h.length) { el.innerHTML = '<div style="font-size:13px;color:var(--color-text-secondary)">No transactions yet.</div>'; return; }
+  el.innerHTML = h.slice().reverse().map(t =>
+    `<div class="tx-row"><span class="tx-label">${t.type}</span><span style="color:${t.amount > 0 ? 'var(--color-text-success)' : 'var(--color-text-danger)'}">${t.amount > 0 ? '+' : ''}${fmt(t.amount)}</span></div>`
+  ).join('');
+}
+
+function login() {
+  const cn = parseInt(document.getElementById('cn-input').value);
+  const pin = parseInt(document.getElementById('pin-input').value);
+  const msg = document.getElementById('login-msg');
+  if (!data[cn]) { msg.innerHTML = '<div class="msg danger"><i class="ti ti-alert-circle"></i> Card number not found.</div>'; return; }
+  if (data[cn].pin !== pin) { msg.innerHTML = '<div class="msg danger"><i class="ti ti-alert-circle"></i> Invalid PIN. Please try again.</div>'; return; }
+  currentCard = cn;
+  showSection('menu');
+}
+
+function logout() {
+  currentCard = null;
+  document.getElementById('cn-input').value = '';
+  document.getElementById('pin-input').value = '';
+  showSection('login');
+}
+
+function deposit() {
+  const amount = parseFloat(document.getElementById('dep-amount').value);
+  const msg = document.getElementById('dep-msg');
+  if (!amount || amount <= 0) { msg.innerHTML = '<div class="msg danger">Please enter a valid amount.</div>'; return; }
+  data[currentCard].balance += amount;
+  data[currentCard].history.push({ type: 'Deposit', amount: amount });
+  document.getElementById('dep-amount').value = '';
+  msg.innerHTML = `<div class="msg success"><i class="ti ti-check"></i> Deposited ${fmt(amount)} successfully. New balance: ${fmt(data[currentCard].balance)}</div>`;
+  refreshBalance();
+}
+
+function withdraw() {
+  const amount = parseFloat(document.getElementById('wit-amount').value);
+  const msg = document.getElementById('wit-msg');
+  if (!amount || amount <= 0) { msg.innerHTML = '<div class="msg danger">Please enter a valid amount.</div>'; return; }
+  if (amount > data[currentCard].balance) { msg.innerHTML = '<div class="msg danger"><i class="ti ti-alert-circle"></i> Insufficient balance.</div>'; return; }
+  data[currentCard].balance -= amount;
+  data[currentCard].history.push({ type: 'Withdrawal', amount: -amount });
+  document.getElementById('wit-amount').value = '';
+  msg.innerHTML = `<div class="msg success"><i class="ti ti-check"></i> Withdrew ${fmt(amount)} successfully. Remaining: ${fmt(data[currentCard].balance)}</div>`;
+  refreshBalance();
+}
+
+document.getElementById('pin-input').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+</script>
